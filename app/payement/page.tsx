@@ -36,6 +36,10 @@ export default function PaymentPage() {
       if (!res.ok) throw new Error(data.message || "Erreur lors du paiement");
 
       // Rediriger l'utilisateur vers la page de paiement Moneroo
+      console.log('---------------------');
+      console.log(data.checkout_url);
+      console.log('---------------------');
+
       window.location.href = data.checkout_url;
     } catch (err: any) {
       setError(err.message);

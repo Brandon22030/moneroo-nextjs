@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     console.log("✅ Réponse Moneroo :", response.data);
 
     return NextResponse.json(
-      { checkout_url: response.data.checkout_url },
+      { ...response.data.data },
       { status: 200 }
     );
   } catch (error: any) {
