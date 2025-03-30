@@ -15,6 +15,8 @@ export default function PaymentPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,15 +34,14 @@ export default function PaymentPage() {
         body: JSON.stringify(formData),
       });
 
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Erreur lors du paiement");
-
-      // Rediriger l'utilisateur vers la page de paiement Moneroo
-      console.log('---------------------');
-      console.log(data.checkout_url);
-      console.log('---------------------');
-
-      window.location.href = data.checkout_url;
+      setPaymentUrl(data.checkout_url);
+      setIsModalOpen(true);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -49,72 +50,111 @@ export default function PaymentPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Initier un Paiement</h2>
-      {error && <p className="text-red-500">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="amount"
-          type="number"
-          placeholder="Montant"
-          value={formData.amount}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          name="currency"
-          type="text"
-          placeholder="Devise (ex: XOF)"
-          value={formData.currency}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          name="description"
-          type="text"
-          placeholder="Description"
-          value={formData.description}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="Email client"
-          value={formData.email}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          name="firstName"
-          type="text"
-          placeholder="Prénom client"
-          value={formData.firstName}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          name="lastName"
-          type="text"
-          placeholder="Nom client"
-          value={formData.lastName}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-500 text-white p-2 rounded"
-        >
-          {loading ? "Traitement..." : "Payer maintenant"}
-        </button>
-      </form>
+    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
+      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-light-blue-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
+        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+          <div className="max-w-md mx-auto">
+            <div className="divide-y divide-gray-200">
+              <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                <h1 className="text-2xl font-bold mb-4">Paiement</h1>
+
+                {error && <div className="text-red-500 mb-4">{error}</div>}
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="amount" className="block text-sm font-medium mb-1">
+                      Montant
+                    </label>
+                    <input
+                      type="number"
+                      id="amount"
+                      name="amount"
+                      value={formData.amount}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      min="100"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium mb-1">
+                      Prénom
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium mb-1">
+                      Nom
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? "Chargement..." : "Payer"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-4xl h-[80vh] overflow-hidden relative">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+            <iframe
+              src={paymentUrl}
+              className="w-full h-full"
+              title="Paiement"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

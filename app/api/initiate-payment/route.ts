@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const data = {
       amount: Number(amount),
       currency,
-      description,
+      description: "Paiement pour l'achat d'un produit",
       customer: {
         email,
         first_name: firstName,
