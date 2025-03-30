@@ -15,8 +15,6 @@ export default function PaymentPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [paymentUrl, setPaymentUrl] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,8 +38,8 @@ export default function PaymentPage() {
       }
 
       const data = await res.json();
-      setPaymentUrl(data.checkout_url);
-      setIsModalOpen(true);
+
+      window.location.href = data.checkout_url;
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -137,24 +135,7 @@ export default function PaymentPage() {
         </div>
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-4xl h-[80vh] overflow-hidden relative">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-            <iframe
-              src={paymentUrl}
-              className="w-full h-full"
-              title="Paiement"
-            />
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
